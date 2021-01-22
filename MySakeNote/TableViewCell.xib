@@ -26,7 +26,7 @@
                         <nil key="highlightedColor"/>
                     </label>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ptc-pY-k0y">
-                        <rect key="frame" x="250" y="12" width="20" height="20"/>
+                        <rect key="frame" x="270" y="12" width="20" height="20"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="20" id="Omd-oG-4YW"/>
                             <constraint firstAttribute="height" constant="20" id="qp4-vG-oVk"/>
@@ -51,7 +51,7 @@
                     <constraint firstAttribute="bottom" secondItem="AvG-Dr-dOg" secondAttribute="bottom" constant="6" id="EPJ-fN-Uj4"/>
                     <constraint firstItem="AvG-Dr-dOg" firstAttribute="top" secondItem="NiV-v2-Xs5" secondAttribute="bottom" constant="2" id="GaJ-fm-jIh"/>
                     <constraint firstItem="AvG-Dr-dOg" firstAttribute="top" secondItem="NiV-v2-Xs5" secondAttribute="bottom" constant="3" id="HdD-2a-98t"/>
-                    <constraint firstAttribute="trailing" secondItem="ptc-pY-k0y" secondAttribute="trailing" constant="50" id="Iho-W8-MtN"/>
+                    <constraint firstAttribute="trailing" secondItem="ptc-pY-k0y" secondAttribute="trailing" constant="30" id="LA9-Oq-vS1"/>
                     <constraint firstItem="ptc-pY-k0y" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="PTN-I7-zab"/>
                     <constraint firstItem="NiV-v2-Xs5" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="11" id="X9Y-yy-vnc"/>
                     <constraint firstItem="NiV-v2-Xs5" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="20" id="kas-lI-I8i"/>

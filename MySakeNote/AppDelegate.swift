@@ -27,10 +27,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let mySake =  UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "toMysake")
         mySake.tabBarItem = UITabBarItem(title: "マイ酒", image: UIImage(named: "star"), tag: 0)
         viewControllers.append(mySake)
-        
-//        let sake =  UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "toSake")
-//        sake.tabBarItem = UITabBarItem(title: "酒", image: UIImage(named: "star"), tag: 0)
-//        viewControllers.append(sake)
 
         let shuzou = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "toShuzou")
         shuzou.tabBarItem = UITabBarItem(title: "酒造検索", image: UIImage(named: "shop"), tag: 2)
