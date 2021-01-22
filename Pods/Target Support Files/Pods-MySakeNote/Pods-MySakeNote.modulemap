@@ -1,0 +1,6 @@
+framework module Pods_MySakeNote {
+  umbrella header "Pods-MySakeNote-umbrella.h"
+
+  export *
+  module * { export * }
+}
