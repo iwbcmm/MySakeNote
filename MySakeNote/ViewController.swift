@@ -37,6 +37,8 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
         if UserDefaults.standard.stringArray(forKey: "sakeNameArray") != nil {
         allFavoritedSake()
         }
+        
+        navigationItem.hidesBackButton = true
     }
     
     var addBtn: UIBarButtonItem!
@@ -141,9 +143,9 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
         tableView.reloadData()
     }
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
-    }
+//    func numberOfSections(in tableView: UITableView) -> Int {
+//        return 1
+//    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if searchWord == "" {
@@ -186,9 +188,9 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
         }
     }
     
-    func tableView(_ tableView: UITableView,canEditRowAt indexPath: IndexPath) -> Bool{
-        return true
-    }
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath)-> UITableViewCell.EditingStyle {
+           return .delete
+       }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == UITableViewCell.EditingStyle.delete {
@@ -212,8 +214,7 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
                 UserDefaults.standard.set(fileteredSakeArray, forKey: "sakeNameArray")
                 
                 self.searchResult.remove(at: indexPath.row)
-                let indexSet = NSMutableIndexSet()
-                tableView.deleteSections(indexSet as IndexSet, with: .automatic)
+                self.tableView.deleteRows(at: [indexPath], with: .automatic)
             }
         }
     }

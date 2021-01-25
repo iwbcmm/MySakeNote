@@ -56,6 +56,7 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
         self.navigationController?.navigationBar.titleTextAttributes = [
             .foregroundColor: UIColor.white
         ]
+        
     }
     
     @IBOutlet weak var searchBar: UISearchBar!
