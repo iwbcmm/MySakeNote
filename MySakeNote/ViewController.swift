@@ -12,7 +12,7 @@ import Alamofire
 import SwiftyJSON
 import SafariServices
 
-class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate, UITableViewDataSource, SFSafariViewControllerDelegate {
+class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate, UITableViewDataSource, SFSafariViewControllerDelegate, UIAdaptivePresentationControllerDelegate {
     
     @IBOutlet weak var scrollBar: UITableView!
     @IBOutlet weak var tableView: UITableView!
@@ -53,8 +53,10 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         UserDefaults.standard.register(defaults: ["sakeNameArray": []])
-        let save = UserDefaults.standard.object(forKey: "sakeNameArray") as? String
-        print(save as Any)
+        
+        if UserDefaults.standard.stringArray(forKey: "sakeNameArray") != nil {
+        allFavoritedSake()
+        }
     }
     
   @objc func onClick() {
@@ -67,7 +69,7 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
     transition.type = CATransitionType.push
     transition.subtype = CATransitionSubtype.fromRight
     view.window!.layer.add(transition, forKey: kCATransition)
-    self.present(navigationController, animated: false, completion: nil)
+    self.navigationController?.pushViewController(sakeVC!, animated: false)
     }
     
     func allFavoritedSake() {
@@ -76,7 +78,11 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
            }
         loadStatus = "fetching"
         
-        let getSakeArray: [String] = UserDefaults.standard.stringArray(forKey: "sakeNameArray")!
+        var getSakeArray: [String] = []
+        
+        if UserDefaults.standard.stringArray(forKey: "sakeNameArray") != nil {
+        getSakeArray = UserDefaults.standard.array(forKey: "sakeNameArray") as? [String] ?? []
+        }
         print(getSakeArray)
         
         sakes = []
@@ -214,10 +220,20 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
 
 }
 
-extension ViewController: UIAdaptivePresentationControllerDelegate {
-    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-        print("閉じる")
-        allFavoritedSake()
-    }
-}
+//extension ViewController: UIAdaptivePresentationControllerDelegate {
+//    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+//        print("閉じる")
+//
+//    }
+//}
 
+extension ViewController {
+    override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
+        super.dismiss(animated: flag, completion: completion)
+        guard let presentationController = self.navigationController?.presentationController else {
+            return
+        }
+        presentationController.delegate?.presentationControllerDidDismiss?(presentationController)
+    }
+
+}

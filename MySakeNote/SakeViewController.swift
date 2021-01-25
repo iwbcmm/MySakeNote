@@ -81,20 +81,21 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-            if #available(iOS 13.0, *) {
-                presentingViewController?.beginAppearanceTransition(false, animated: animated)
-            }
             allSake()
             firstAppear = true
     }
     
     @objc func onClick() {
+        let sakeVC = storyboard?.instantiateViewController(withIdentifier: "toMysake")
+        let navigationController = UINavigationController(rootViewController: sakeVC!)
+        navigationController.modalPresentationStyle = .fullScreen
+        navigationController.presentationController?.delegate = self
         let transition = CATransition()
         transition.duration = 0.15
         transition.type = CATransitionType.push
         transition.subtype = CATransitionSubtype.fromLeft
         view.window!.layer.add(transition, forKey: kCATransition)
-        dismiss(animated: false, completion: nil)
+        self.navigationController?.pushViewController(sakeVC!, animated: false)
     }
     
     func allSake() {
@@ -231,14 +232,20 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
     
 }
 
-extension SakeViewController {
+//extension SakeViewController {
+//    override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
+//        super.dismiss(animated: flag, completion: completion)
+//        guard let presentationController = self.navigationController?.presentationController else {
+//            return
+//        }
+//        presentationController.delegate?.presentationControllerDidDismiss?(presentationController)
+//    }
+//
+//}
 
-    override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
-        super.dismiss(animated: flag, completion: completion)
-        guard let presentationController = self.navigationController?.presentationController else {
-            return
-        }
-        presentationController.delegate?.presentationControllerDidDismiss?(presentationController)
+extension SakeViewController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        print("閉じる")
+        tableView.reloadData()
     }
-
 }

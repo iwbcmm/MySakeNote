@@ -10,7 +10,7 @@
         <!--ViewController-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController storyboardIdentifier="toMysake" title="ViewController" id="BYZ-38-t0r" customClass="ViewController" customModule="MySakeNote" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="toMysake" title="ViewController" modalPresentationStyle="fullScreen" id="BYZ-38-t0r" customClass="ViewController" customModule="MySakeNote" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -292,7 +292,7 @@
         <!--Navigation Controller-->
         <scene sceneID="0Vr-wJ-cUW">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="YP2-Ic-kzM" sceneMemberID="viewController">
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" modalPresentationStyle="fullScreen" id="YP2-Ic-kzM" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="48W-yf-BZL">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
