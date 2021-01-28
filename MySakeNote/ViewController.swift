@@ -50,7 +50,12 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
             tableView.reloadData()
         }
     }
-    var searchResult: [SakeModel] = []
+    var searchResult: [SakeModel] = [] {
+        didSet {
+            tableView.reloadData()
+        }
+    }
+    var deletedSearchResult: [SakeModel] = []
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -133,19 +138,19 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
     }
     
     func searchFavoritedSakeBar(keyword: String){
-        if keyword != "" {
+        if keyword != "" && deletedSearchResult != [] {
+            searchResult = deletedSearchResult
+            print(searchResult)
+        } else if keyword != "" {
             searchResult = sakes.filter { sakes in
                 return sakes.sakeName.contains(keyword)
             } as Array
-        } else {
+        } else if keyword == "" && deletedSearchResult != [] {
+            allFavoritedSake()
+        } else if keyword == "" && deletedSearchResult == [] {
             searchResult = sakes
         }
-        tableView.reloadData()
     }
-    
-//    func numberOfSections(in tableView: UITableView) -> Int {
-//        return 1
-//    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if searchWord == "" {
@@ -204,37 +209,27 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
                 
                 self.sakes.remove(at: indexPath.row)
                 let indexSet = NSMutableIndexSet()
-                tableView.deleteSections(indexSet as IndexSet, with: .automatic)
+                self.tableView.deleteSections(indexSet as IndexSet, with: .automatic)
     
             } else {
+                self.tableView.beginUpdates()
+                
                 UserDefaults.standard.removeObject(forKey: searchResult[indexPath.row].sakeIdentifyCode)
                 
                 let sakeNameArray = UserDefaults.standard.array(forKey: "sakeNameArray") as? [String] ?? []
                 let fileteredSakeArray = sakeNameArray.filter { $0 != searchResult[indexPath.row].sakeName }
                 UserDefaults.standard.set(fileteredSakeArray, forKey: "sakeNameArray")
-                
+  
+                self.tableView.deleteRows(at: [indexPath], with: .fade)
                 self.searchResult.remove(at: indexPath.row)
-                self.tableView.deleteRows(at: [indexPath], with: .automatic)
+                
+                deletedSearchResult = searchResult
+                print(searchResult)
+                
+                self.tableView.endUpdates()
+
             }
         }
-    }
-
-}
-
-//extension ViewController: UIAdaptivePresentationControllerDelegate {
-//    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-//        print("閉じる")
-//
-//    }
-//}
-
-extension ViewController {
-    override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
-        super.dismiss(animated: flag, completion: completion)
-        guard let presentationController = self.navigationController?.presentationController else {
-            return
-        }
-        presentationController.delegate?.presentationControllerDidDismiss?(presentationController)
     }
 
 }

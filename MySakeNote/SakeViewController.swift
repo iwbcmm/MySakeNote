@@ -90,7 +90,6 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
         let sakeVC = storyboard?.instantiateViewController(withIdentifier: "toMysake")
         let navigationController = UINavigationController(rootViewController: sakeVC!)
         navigationController.modalPresentationStyle = .fullScreen
-        navigationController.presentationController?.delegate = self
         let transition = CATransition()
         transition.duration = 0.15
         transition.type = CATransitionType.push
@@ -231,22 +230,4 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
         }
     }
     
-}
-
-//extension SakeViewController {
-//    override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
-//        super.dismiss(animated: flag, completion: completion)
-//        guard let presentationController = self.navigationController?.presentationController else {
-//            return
-//        }
-//        presentationController.delegate?.presentationControllerDidDismiss?(presentationController)
-//    }
-//
-//}
-
-extension SakeViewController: UIAdaptivePresentationControllerDelegate {
-    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-        print("閉じる")
-        tableView.reloadData()
-    }
 }
