@@ -68,6 +68,7 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
     
   @objc func onClick() {
     let sakeVC = storyboard?.instantiateViewController(withIdentifier: "toSake")
+    sakeVC?.hidesBottomBarWhenPushed = true
     let navigationController = UINavigationController(rootViewController: sakeVC!)
     navigationController.modalPresentationStyle = .fullScreen
     navigationController.presentationController?.delegate = self
@@ -77,6 +78,7 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
     transition.subtype = CATransitionSubtype.fromRight
     view.window!.layer.add(transition, forKey: kCATransition)
     self.navigationController?.pushViewController(sakeVC!, animated: false)
+    sakeVC?.hidesBottomBarWhenPushed = false
     }
     
     func allFavoritedSake() {
@@ -137,18 +139,24 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
         searchFavoritedSakeBar(keyword: searchWord)
     }
     
+    var isFirst = true
+    
     func searchFavoritedSakeBar(keyword: String){
         if keyword != "" && deletedSearchResult != [] {
             searchResult = deletedSearchResult
-            print(searchResult)
-        } else if keyword != "" {
-            searchResult = sakes.filter { sakes in
-                return sakes.sakeName.contains(keyword)
-            } as Array
+        } else if keyword != "" && deletedSearchResult == [] {
+            if isFirst {
+                isFirst = false
+                searchResult = sakes.filter { sakes in
+                        return sakes.sakeName.contains(keyword)
+                    } as Array
+            } else {
+                searchResult = []
+            }
         } else if keyword == "" && deletedSearchResult != [] {
             allFavoritedSake()
         } else if keyword == "" && deletedSearchResult == [] {
-            searchResult = sakes
+            allFavoritedSake()
         }
     }
     
@@ -209,7 +217,7 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
                 
                 self.sakes.remove(at: indexPath.row)
                 let indexSet = NSMutableIndexSet()
-                self.tableView.deleteSections(indexSet as IndexSet, with: .automatic)
+                self.tableView.deleteSections(indexSet as IndexSet, with: .fade)
     
             } else {
                 self.tableView.beginUpdates()

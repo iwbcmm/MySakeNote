@@ -29,11 +29,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         viewControllers.append(mySake)
 
         let shuzou = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "toShuzou")
-        shuzou.tabBarItem = UITabBarItem(title: "酒造検索", image: UIImage(named: "shop"), tag: 2)
+        shuzou.tabBarItem = UITabBarItem(title: "酒造検索", image: UIImage(named: "shop"), tag: 1)
         viewControllers.append(shuzou)
 
         let setting = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "toSetting")
-        setting.tabBarItem = UITabBarItem(title: "設定", image: UIImage(named: "setting"), tag: 3)
+        setting.tabBarItem = UITabBarItem(title: "設定", image: UIImage(named: "setting"), tag: 2)
         viewControllers.append(setting)
 
         tabBarController = UITabBarController()

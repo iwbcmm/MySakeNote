@@ -137,10 +137,14 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
         self.view.endEditing(true)
         sakes = []
         currentPage = 1
-        guard let word = searchBar.text else {
-            return
+        let word = searchBar.text
+        if  word != "" {
+            self.searchWord = word!
+        } else {
+            sakes = []
+            currentPage0 = 1
+            allSake()
         }
-        self.searchWord = word
         print(searchWord)
         searchSake(keyword: searchWord)
     }

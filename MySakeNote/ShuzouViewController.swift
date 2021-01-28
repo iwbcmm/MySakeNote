@@ -117,10 +117,14 @@ class ShuzouViewController: UIViewController, UISearchBarDelegate,  UITableViewD
         self.view.endEditing(true)
         makers = []
         currentPage = 1
-        guard let word = searchBar.text else {
-            return
+        let word = searchBar.text
+        if  word != "" {
+            self.searchWord = word!
+        } else {
+            makers = []
+            currentPage0 = 1
+            allShuzou()
         }
-        self.searchWord = word
         print(searchWord)
         searchShuzou(keyword: searchWord)
     }
