@@ -33,15 +33,24 @@ struct MakersModel : Codable{
     
 }
 
+enum Status {
+    case empty
+    case isLoading
+    case full
+    case loadmore
+}
 
-class ShuzouViewController: UIViewController, UISearchBarDelegate,  UITableViewDataSource, UITableViewDelegate, SFSafariViewControllerDelegate {
+var loadStatus: Status = .empty
+
+
+class ShuzouViewController: UIViewController, UISearchBarDelegate,  UITableViewDataSource, UITableViewDelegate, SFSafariViewControllerDelegate, UIScrollViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
         searchBar.delegate = self
         tableView.delegate = self
         tableView.dataSource = self
-        
+        scrollView.delegate = self
         self.title = "酒造検索"
         
          self.navigationController?.navigationBar.barTintColor = UIColor(red: 135/255, green: 206/255, blue: 235/255, alpha: 255/255)
@@ -50,9 +59,17 @@ class ShuzouViewController: UIViewController, UISearchBarDelegate,  UITableViewD
         ]
     }
     
+    override func viewDidLayoutSubviews() {
+
+      scrollView.contentSize = tableView.frame.size
+      scrollView.flashScrollIndicators()
+
+    }
+    
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
-  
+    @IBOutlet weak var scrollView: UIScrollView!
+    
     override func didReceiveMemoryWarning() {
           super.didReceiveMemoryWarning()
     }
@@ -65,25 +82,21 @@ class ShuzouViewController: UIViewController, UISearchBarDelegate,  UITableViewD
     var currentPage0: Int = 1
     var currentPage: Int = 1
     var searchWord: String = ""
-    var loadStatus: String = "initial"
-    var isLoading: Bool = false
-       
+    var loading: Bool = false
+    
     private var firstAppear: Bool = false
        
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        if !firstAppear {
-            allShuzou()
-            firstAppear = true
-        }
+        loadStatus = .empty
+        allShuzou()
     }
     
     func allShuzou() {
-
-        guard loadStatus != "fetching" && loadStatus != "full" else {
-               return
-           }
-        loadStatus = "fetching"
+        if loadStatus == .isLoading || loadStatus == .full {
+            return
+        }
+        loadStatus = .isLoading
         guard let req_url = URL(string: "https://www.sakenote.com/api/v1/makers?token=614dec4fa2aa98801c2d9f79fb214beb5dd3c4d9") else {
             return
             }
@@ -94,45 +107,54 @@ class ShuzouViewController: UIViewController, UISearchBarDelegate,  UITableViewD
           
         let request = AF.request(req_url, method: .get, parameters: params, encoding: URLEncoding.default, headers: nil)
             .response { response in
-                guard let data = response.data else { return }
+                guard let data = response.data else {return}
                 do {
-                    //let decoder: JSONDecoder = JSONDecoder()
-                    //decoder.keyDecodingStrategy = .convertFromSnakeCase
                     let makerj : Makers = try JSONDecoder().decode(Makers.self, from: data)
                     if makerj.makers.count == 0 {
-                       self.loadStatus = "full"
-                       return
-                       }
+                        loadStatus = .full
+                        return
+                    }
                     self.makers = self.makers + makerj.makers
-                    self.loadStatus = "loadmore"
-                    self.isLoading = false
+                    loadStatus = .loadmore
                     self.currentPage0 += 1
-                    print(self.currentPage0)
                     print("-----------------------")
-                } catch let error { print(error) }
+                } catch let error {
+                    print(error)
+                    
+                }
             }
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         self.view.endEditing(true)
         makers = []
-        currentPage = 1
-        let word = searchBar.text
+        
+        searchWord = ""
+        
+        var word: String = ""
+        word = searchBar.text!
+        
         if  word != "" {
-            self.searchWord = word!
-        } else {
-            makers = []
+            currentPage = 1
+            loadStatus = .empty
+            self.searchWord = word
+            searchShuzou(keyword: searchWord)
+        } else if word == "" {
             currentPage0 = 1
+            loadStatus = .empty
             allShuzou()
         }
-        print(searchWord)
-        searchShuzou(keyword: searchWord)
     }
        
     func searchShuzou(keyword: String) {
-        guard loadStatus != "fetching" && loadStatus != "full" else { return }
-        loadStatus = "fetching"
-        guard let req_url = URL(string: "https://www.sakenote.com/api/v1/makers?token=614dec4fa2aa98801c2d9f79fb214beb5dd3c4d9") else { return }
+        if loadStatus == .isLoading || loadStatus == .full {
+            return
+        }
+        
+        loadStatus = .isLoading
+        guard let req_url = URL(string: "https://www.sakenote.com/api/v1/makers?token=614dec4fa2aa98801c2d9f79fb214beb5dd3c4d9") else {
+            return
+        }
         print(req_url)
 
         var params: [String:Any] = [:]
@@ -151,15 +173,20 @@ class ShuzouViewController: UIViewController, UISearchBarDelegate,  UITableViewD
                     print(response)
                     let makerjson : Makers = try JSONDecoder().decode(Makers.self, from: data)
                     if makerjson.makers.count == 0 {
-                        self.loadStatus = "full"
+                        loadStatus = .full
                         return
                     }
-                    self.makers = self.makers + makerjson.makers
-                    self.loadStatus = "loadmore"
-                    self.isLoading = false
+                    DispatchQueue.main.async() { () -> Void in
+                        self.makers = self.makers + makerjson.makers
+                        loadStatus = .loadmore
+                    }
+                    
                     self.currentPage += 1
+                    print(self.currentPage)
                     print("-----------------------")
-                } catch let error{ print(error) }
+                } catch let error{
+                    print(error)
+                }
             }
         request.cURLDescription { v in
             print(v)
@@ -196,14 +223,13 @@ class ShuzouViewController: UIViewController, UISearchBarDelegate,  UITableViewD
         let maximamuOffset = tableView.contentSize.height - tableView.frame.height
         let distanceToBottom = maximamuOffset - currentOffsetY
         if distanceToBottom < 500 {
-            if searchWord.count > 0 {
-                self.isLoading = true
+            if searchWord != "" {
+                self.loading = true
                 searchShuzou(keyword: searchWord)
             } else {
-                self.isLoading = true
+                self.loading = true
                 allShuzou()
             }
         }
     }
-    
 }

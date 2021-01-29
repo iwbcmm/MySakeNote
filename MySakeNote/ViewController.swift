@@ -14,9 +14,10 @@ import SafariServices
 
 class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate, UITableViewDataSource, SFSafariViewControllerDelegate, UIAdaptivePresentationControllerDelegate {
     
-    @IBOutlet weak var scrollBar: UITableView!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
+    @IBOutlet weak var scrollView: UIScrollView!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,8 +43,7 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
     }
     
     var addBtn: UIBarButtonItem!
-    var loadStatus: String = "initial"
-    var isLoading: Bool = false
+    var loading: Bool = false
     var searchWord: String = ""
     var sakes : [SakeModel] = [] {
         didSet {
@@ -82,11 +82,12 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
     }
     
     func allFavoritedSake() {
-        guard loadStatus != "fetching" && loadStatus != "full" else {
-               return
-           }
-        loadStatus = "fetching"
         
+        if loadStatus == .isLoading || loadStatus == .full {
+            return
+        }
+        
+        loadStatus = .isLoading
         var getSakeArray: [String] = []
         
         if UserDefaults.standard.stringArray(forKey: "sakeNameArray") != nil {
@@ -104,60 +105,73 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
             var params: [String:Any] = [:]
             params["sake_name"] = SN
             
-            guard let req_url = URL(string: "https://www.sakenote.com/api/v1/sakes?token=614dec4fa2aa98801c2d9f79fb214beb5dd3c4d9") else { return }
+            guard let req_url = URL(string: "https://www.sakenote.com/api/v1/sakes?token=614dec4fa2aa98801c2d9f79fb214beb5dd3c4d9") else {
+                return
+            }
             
             let request = AF.request(req_url, method: .get,  parameters: params, encoding: URLEncoding.default, headers: nil)
             .response { response in
-                guard let data = response.data else { return }
+                guard let data = response.data else {
+                    return
+                }
                 do {
                     let decoder: JSONDecoder = JSONDecoder()
                     decoder.keyDecodingStrategy = .convertFromSnakeCase
                     let sakej : Sakes = try JSONDecoder().decode(Sakes.self, from: data)
                     if sakej.sakes.count == 0 {
-                       self.loadStatus = "full"
-                       return
-                       }
+                        loadStatus = .full
+                        return
+                    }
                     let filteredSake = sakej.sakes.filter{ $0.sakeName == getSakeArray[i] }
                     self.sakes =  self.sakes + filteredSake
                     self.sakes.sort{
                         $0.sakeName < $1.sakeName
                     }
-                    self.loadStatus = "loadmore"
-                    self.isLoading = false
-                    } catch let error { print(error) }
+                    loadStatus = .loadmore
+                    } catch let error {
+                        print(error)
+                    }
             }
         }
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         self.view.endEditing(true)
-        guard let word = searchBar.text else {
-            return
+        
+        searchWord = ""
+        
+        var word: String = ""
+        word = searchBar.text!
+        
+        if  word != "" {
+            
+            loadStatus = .empty
+            self.searchWord = word
+            searchFavoritedSakeBar(keyword: searchWord)
+            
+        } else {
+            
+            loadStatus = .empty
+            allFavoritedSake()
         }
-        self.searchWord = word
-        print(searchWord)
-        searchFavoritedSakeBar(keyword: searchWord)
     }
-    
-    var isFirst = true
+//    var isFirst = true
     
     func searchFavoritedSakeBar(keyword: String){
-        if keyword != "" && deletedSearchResult != [] {
+        
+        if deletedSearchResult != [] {
             searchResult = deletedSearchResult
-        } else if keyword != "" && deletedSearchResult == [] {
-            if isFirst {
-                isFirst = false
-                searchResult = sakes.filter { sakes in
-                        return sakes.sakeName.contains(keyword)
-                    } as Array
-            } else {
-                searchResult = []
-            }
-        } else if keyword == "" && deletedSearchResult != [] {
-            allFavoritedSake()
-        } else if keyword == "" && deletedSearchResult == [] {
-            allFavoritedSake()
+        } else if deletedSearchResult == [] {
+//            if isFirst {
+//                isFirst = false
+            searchResult = sakes.filter { sakes in
+                return sakes.sakeName.contains(keyword)
+            } as Array
         }
+//        } else if keyword == "" && deletedSearchResult != [] {
+//            allFavoritedSake()
+//        } else if keyword == "" && deletedSearchResult == [] {
+//            allFavoritedSake()
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -232,7 +246,11 @@ class ViewController: UIViewController, UISearchBarDelegate, UITableViewDelegate
                 self.searchResult.remove(at: indexPath.row)
                 
                 deletedSearchResult = searchResult
-                print(searchResult)
+                print(deletedSearchResult)
+                
+                if deletedSearchResult == [] {
+                    allFavoritedSake()
+                }
                 
                 self.tableView.endUpdates()
 

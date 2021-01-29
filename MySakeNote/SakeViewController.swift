@@ -32,7 +32,6 @@ struct SakeModel: Codable, Equatable {
         case makerName = "maker_name"
         case url
     }
-    
 }
 
 class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDataSource, UITableViewDelegate, SFSafariViewControllerDelegate, UINavigationControllerDelegate {
@@ -75,15 +74,12 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
     var currentPage0: Int = 1
     var currentPage: Int = 1
     var searchWord: String = ""
-    var loadStatus: String = "initial"
-    var isLoading: Bool = false
-    
-    private var firstAppear: Bool = false
+    var loading: Bool = false
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-            allSake()
-            firstAppear = true
+        loadStatus = .empty
+        allSake()
     }
     
     @objc func onClick() {
@@ -100,10 +96,11 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
     
     func allSake() {
 
-        guard loadStatus != "fetching" && loadStatus != "full" else {
-               return
-           }
-        loadStatus = "fetching"
+        if loadStatus == .isLoading || loadStatus == .full {
+            return
+        }
+        
+        loadStatus = .isLoading
         guard let req_url = URL(string: "https://www.sakenote.com/api/v1/sakes?token=614dec4fa2aa98801c2d9f79fb214beb5dd3c4d9") else {
             return
             }
@@ -114,45 +111,60 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
           
         let request = AF.request(req_url, method: .get, parameters: params, encoding: URLEncoding.default, headers: nil)
             .response { response in
-                guard let data = response.data else { return }
+                guard let data = response.data else {
+                    return
+                }
                 do {
                     let decoder: JSONDecoder = JSONDecoder()
                     decoder.keyDecodingStrategy = .convertFromSnakeCase
                     let sakej : Sakes = try JSONDecoder().decode(Sakes.self, from: data)
                     if sakej.sakes.count == 0 {
-                       self.loadStatus = "full"
+                       loadStatus = .full
                        return
                        }
                     self.sakes = self.sakes + sakej.sakes
-                    self.loadStatus = "loadmore"
-                    self.isLoading = false
+                    loadStatus = .loadmore
                     self.currentPage0 += 1
                     print(self.currentPage0)
                     print("-----------------------")
-                    } catch let error { print(error) }
+                    } catch let error {
+                        print(error)
+                        
+                    }
             }
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
         self.view.endEditing(true)
         sakes = []
-        currentPage = 1
-        let word = searchBar.text
+        
+        searchWord = ""
+        
+        var word: String = ""
+        word = searchBar.text!
+        
         if  word != "" {
-            self.searchWord = word!
+            currentPage = 1
+            loadStatus = .empty
+            self.searchWord = word
+            searchSake(keyword: searchWord)
         } else {
-            sakes = []
             currentPage0 = 1
+            loadStatus = .empty
             allSake()
         }
-        print(searchWord)
-        searchSake(keyword: searchWord)
     }
     
     func searchSake(keyword: String) {
-        guard loadStatus != "fetching" && loadStatus != "full" else { return }
-        loadStatus = "fetching"
-        guard let req_url = URL(string: "https://www.sakenote.com/api/v1/sakes?token=614dec4fa2aa98801c2d9f79fb214beb5dd3c4d9") else { return }
+        if loadStatus == .isLoading || loadStatus == .full {
+            return
+        }
+        
+        loadStatus = .isLoading
+        guard let req_url = URL(string: "https://www.sakenote.com/api/v1/sakes?token=614dec4fa2aa98801c2d9f79fb214beb5dd3c4d9") else {
+            return
+        }
         print(req_url)
 
         var params: [String:Any] = [:]
@@ -163,7 +175,9 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
         
         let request = AF.request(req_url, method: .get, parameters: params, encoding: URLEncoding.default, headers: nil)
             .response { response in
-                guard let data = response.data else { return }
+                guard let data = response.data else {
+                    return
+                }
                 do {
                     let decoder: JSONDecoder = JSONDecoder()
                     decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -171,12 +185,11 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
                     print(response)
                     let sakejson : Sakes = try JSONDecoder().decode(Sakes.self, from: data)
                     if sakejson.sakes.count == 0 {
-                        self.loadStatus = "full"
+                        loadStatus = .full
                         return
                     }
                     self.sakes = self.sakes + sakejson.sakes
-                    self.loadStatus = "loadmore"
-                    self.isLoading = false
+                    loadStatus = .loadmore
                     self.currentPage += 1
                     print("-----------------------")
                 } catch let error{ print(error) }
@@ -184,10 +197,6 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
         request.cURLDescription { v in
             print(v)
         }
-    }
-    
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
     }
    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -224,11 +233,11 @@ class SakeViewController: UIViewController, UISearchBarDelegate,  UITableViewDat
         let maximamuOffset = tableView.contentSize.height - tableView.frame.height
         let distanceToBottom = maximamuOffset - currentOffsetY
         if distanceToBottom < 500 {
-            if searchWord.count > 0 {
-                self.isLoading = true
+            if searchWord != "" {
+                self.loading = true
                 searchSake(keyword: searchWord)
             } else {
-                self.isLoading = true
+                self.loading = true
                 allSake()
             }
         }
